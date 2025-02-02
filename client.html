@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .messages {
+            max-height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .message span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>MQTT Dashboard</h1>
+    <div>
+        <label for="topic">Subscribe to Topic:</label>
+        <input type="text" id="topic" placeholder="e.g., sensor/#">
+        <button id="subscribe">Subscribe</button>
+    </div>
+    <h2>Messages</h2>
+    <div class="messages" id="messages"></div>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        const client = mqtt.connect('ws://localhost:3000'); // Change this to your broker's WebSocket URL
+        const messagesDiv = document.getElementById('messages');
+        const subscribeButton = document.getElementById('subscribe');
+        const topicInput = document.getElementById('topic');
+
+        // Connection events
+        client.on('connect', () => {
+            console.log('Connected to broker');
+        });
+
+        client.on('message', (topic, message) => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message';
+        msgDiv.innerHTML = `<span>Topic:</span> ${topic} <br> <span>Message:</span> ${message.toString()}`;
+        messagesDiv.appendChild(msgDiv);
+
+        // Scroll to the bottom of the messagesDiv
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+
+        // Subscribe to topic
+        subscribeButton.addEventListener('click', () => {
+            const topic = topicInput.value.trim();
+            if (topic) {
+                client.subscribe(topic, (err) => {
+                    if (!err) {
+                        console.log(`Subscribed to topic: ${topic}`);
+                    } else {
+                        console.error(`Failed to subscribe: ${err.message}`);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
